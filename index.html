@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动漫视频播放器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #2c3e50, #1a2a6c);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        header {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+            color: #ffcc00;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .anime-title {
+            font-size: 1.8rem;
+            margin: 10px 0;
+            color: #4dccff;
+            text-shadow: 0 0 10px rgba(77, 204, 255, 0.5);
+        }
+        
+        
+        
+        
+        .video-container {
+            margin: 0 auto 25px;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+            max-width: 700px;
+        }
+        
+        video {
+            width: 100%;
+            height: auto;
+            display: block;
+            outline: none;
+            max-height: 70vh;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            min-width: 150px;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .switch-anime {
+            background: linear-gradient(to right, #1a2a6c, #4dccff);
+        }
+        
+        .episode-info {
+            margin: 15px 0;
+            font-size: 1.1rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 10px;
+            display: inline-block;
+            min-width: 200px;
+        }
+        
+        .episode-nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .episode-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        
+        .episode-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .episode-btn.active {
+            background: #ff416c;
+            transform: scale(1.1);
+        }
+        
+        .anime-list {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .anime-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            width: 180px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .anime-card:hover {
+            transform: translateY(-5px);
+            border-color: #ffcc00;
+        }
+        
+        .anime-card.active {
+            border-color: #4dccff;
+            box-shadow: 0 0 15px rgba(77, 204, 255, 0.7);
+            background: rgba(77, 204, 255, 0.2);
+        }
+        
+        .anime-card img {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+        }
+        
+        .anime-card h3 {
+            font-size: 1.1rem;
+            color: #ffcc00;
+        }
+        
+        footer {
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>动漫视频播放器</h1>
+            <div class="anime-title" id="currentAnimeTitle">我们不可能成为恋人</div>
+        </header>
+        
+        <div class="anime-list">
+            <div class="anime-card active" data-anime="0">
+                <img src="https://pic3.yzzyimg.online/upload/vod/2025-07-08/17519319381.jpg" alt="我们不可能成为恋人">
+                <h3>我们不可能成为恋人</h3>
+            </div>
+            <div class="anime-card" data-anime="1">
+                <img src="https://vip.dytt-img.com/upload/vod/20250202-1/e5ef4be190fb73097d0e421d977a1797.jpg" alt="紫罗兰永恒花园">
+                <h3>紫罗兰永恒花园</h3>
+            </div>
+        </div>
+        
+        <div class="video-container">
+            <video id="player" controls autoplay>
+                <source id="playerSource" src="" type="video/mp4">
+                您的浏览器不支持HTML5视频播放
+            </video>
+        </div>
+        
+        <div class="episode-info">
+            当前播放: <span id="currentEpisode">第1集</span>
+        </div>
+        
+        <div class="episode-nav" id="episodeNav">
+            <!-- 剧集按钮将通过JS动态生成 -->
+        </div>
+        
+        <div class="controls">
+            <button id="prevBtn">上一集</button>
+            <button id="nextBtn">下一集</button>
+            <button class="switch-anime" id="switchAnimeBtn">切换动漫</button>
+        </div>
+        
+        
+
+    <script>
+        // 动漫数据
+        const animes = [
+            {
+                title: "我们不可能成为恋人",
+                episodes: [
+                    'https://sns-video-hw.xhscdn.com/spectrum/1040g0jg31jl4msm9ii005ndvetm083bti1b4t5g',
+                    'https://sns-video-hw.xhscdn.com/spectrum/1040g35831ju4nc7d48105ndvetm083btj08se70',
+                    'https://sns-video-hw.xhscdn.com/spectrum/1040g0jg31k755ugh3q005psnb8thjo3jvahnvjo',
+                    'https://sns-video-hw.xhscdn.com/spectrum/1040g0jg31kg5fkul36005psnb8thjo3je5fjvno',
+                    'https://sns-video-hw.xhscdn.com/spectrum/1040g0jg31kp5rpb7jq005psnb8thjo3jkl6kfio',
+                    'https://sns-video-hw.xhscdn.com/spectrum/1040g0jg31l269las3q005psnb8thjo3j2nn72f8'
+                ]
+            },
+            {
+                title: "紫罗兰永恒花园",
+                episodes: [
+                    'https://mid.w.xk.miui.com/da62fac1ade08c7c13d04e5111a32673.0p?filename=1.mp4',
+                    'https://mid.w.xk.miui.com/65d5eefe59d964187756c2b184c35bb4.0p?filename=1.mp4',
+                    'https://mid.w.xk.miui.com/eedf52a0cdad75d9c39e22ba86942aec.0p?filename=1.mp4',
+                    'https://mid.w.xk.miui.com/bb498bff85eb380bde4ca28cebad6d76.0p?filename=1.mp4',
+                    'https://mid.w.xk.miui.com/9c86060ce9abf7149ca443050028a085.0p?filename=1.mp4',
+                    'https://mid.w.xk.miui.com/cc96d806dc1918ca664f3bc00b219daf.0p?filename=1.mp4',
+                    'https://mid.w.xk.miui.com/35afebeeda4aa56c9c6b0511678e2773.0p?filename=1.mp4',
+                    'https://mid.w.xk.miui.com/b410801933c1b6f0b671b5aa455f1735.0p?filename=1.mp4',
+                    'https://mid.w.xk.miui.com/5b026197cf64d20ad697a340b65ec34c.0p?filename=1.mp4',
+                    'https://mid.w.xk.miui.com/de365c78ee047d4739064b75a7f78e45.0p?filename=1.mp4',
+                    'https://mid.w.xk.miui.com/960a48c6b7e665067c1417c54d1721bf.0p?filename=1.mp4',
+                    'https://mid.w.xk.miui.com/54660981a59886a725bbfd75a8a3aec0.0p?filename=1.mp4',
+                    'https://mid.w.xk.miui.com/da084e2d6f14f3e30d5f507ce7c715b7.0p?filename=1.mp4',
+                    'https://mid.w.xk.miui.com/f28ca2421509ae822a40ff55dd42ae71.0p?filename=1.mp4'
+
+                ]
+            }
+        ];
+        
+        // 获取DOM元素
+        const videoPlayer = document.getElementById('player');
+        const videoSource = document.getElementById('playerSource');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const switchAnimeBtn = document.getElementById('switchAnimeBtn');
+        const currentEpisode = document.getElementById('currentEpisode');
+        const currentAnimeTitle = document.getElementById('currentAnimeTitle');
+        const episodeNav = document.getElementById('episodeNav');
+        const animeCards = document.querySelectorAll('.anime-card');
+        
+        let currentAnimeIndex = 0;
+        let currentEpisodeIndex = 0;
+        
+        // 初始化播放器
+        function initPlayer() {
+            loadAnime(currentAnimeIndex);
+            createEpisodeNav();
+        }
+        
+        // 加载动漫
+        function loadAnime(animeIndex) {
+            currentAnimeIndex = animeIndex;
+            currentEpisodeIndex = 0;
+            
+            const anime = animes[currentAnimeIndex];
+            currentAnimeTitle.textContent = anime.title;
+            
+            // 更新动漫卡片状态
+            animeCards.forEach((card, index) => {
+                if (index === currentAnimeIndex) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+            
+            loadEpisode(currentEpisodeIndex);
+            createEpisodeNav();
+        }
+        
+        // 加载剧集
+        function loadEpisode(episodeIndex) {
+            currentEpisodeIndex = episodeIndex;
+            const episodeUrl = animes[currentAnimeIndex].episodes[currentEpisodeIndex];
+            
+            videoSource.src = episodeUrl;
+            videoPlayer.load();
+            currentEpisode.textContent = `第${currentEpisodeIndex + 1}集`;
+            
+            // 更新剧集按钮状态
+            document.querySelectorAll('.episode-btn').forEach((btn, index) => {
+                if (index === currentEpisodeIndex) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // 尝试自动播放
+            videoPlayer.play().catch(e => {
+                console.log("自动播放被阻止:", e);
+            });
+        }
+        
+        // 创建剧集导航
+        function createEpisodeNav() {
+            episodeNav.innerHTML = '';
+            const episodes = animes[currentAnimeIndex].episodes;
+            
+            for (let i = 0; i < episodes.length; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'episode-btn';
+                if (i === currentEpisodeIndex) btn.classList.add('active');
+                btn.textContent = i + 1;
+                btn.addEventListener('click', () => {
+                    loadEpisode(i);
+                });
+                episodeNav.appendChild(btn);
+            }
+        }
+        
+        // 事件监听
+        prevBtn.addEventListener('click', () => {
+            const episodes = animes[currentAnimeIndex].episodes;
+            currentEpisodeIndex = (currentEpisodeIndex - 1 + episodes.length) % episodes.length;
+            loadEpisode(currentEpisodeIndex);
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            const episodes = animes[currentAnimeIndex].episodes;
+            currentEpisodeIndex = (currentEpisodeIndex + 1) % episodes.length;
+            loadEpisode(currentEpisodeIndex);
+        });
+        
+        switchAnimeBtn.addEventListener('click', () => {
+            currentAnimeIndex = (currentAnimeIndex + 1) % animes.length;
+            loadAnime(currentAnimeIndex);
+        });
+        
+        // 动漫卡片点击事件
+        animeCards.forEach((card, index) => {
+            card.addEventListener('click', () => {
+                loadAnime(index);
+            });
+        });
+        
+        // 初始化播放器
+        initPlayer();
+    </script>
+</body>
+</html>
