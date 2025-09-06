@@ -22,6 +22,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            transition: background 0.3s ease;
+        }
+        
+        body.fullscreen-mode {
+            background: #000;
         }
         
         .container {
@@ -36,6 +41,7 @@
             background: rgba(0, 0, 0, 0.4);
             border-radius: 15px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            position: relative;
         }
         
         h1 {
@@ -43,6 +49,25 @@
             margin-bottom: 5px;
             color: #ffcc00;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .settings-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
         }
         
         .anime-title {
@@ -79,14 +104,14 @@
             overflow: hidden;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
             max-width: 700px;
-            height: 394px;
         }
         
-        #mp4-player, #hls-player {
+        video {
             width: 100%;
-            height: 100%;
+            height: auto;
             display: block;
             outline: none;
+            max-height: 70vh;
         }
         
         .loading-overlay {
@@ -261,6 +286,73 @@
             color: #ffcc00;
         }
         
+        .settings-panel {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+            text-align: left;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .settings-panel h3 {
+            color: #4dccff;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .setting-item {
+            margin-bottom: 15px;
+        }
+        
+        .setting-item label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .select-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .select-wrapper select {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            appearance: none;
+        }
+        
+        .select-wrapper::after {
+            content: "▼";
+            font-size: 0.8rem;
+            color: white;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+        
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+        
         footer {
             margin-top: 30px;
             font-size: 0.9rem;
@@ -294,10 +386,6 @@
             
             .anime-card h3 {
                 font-size: 1rem;
-            }
-            
-            .video-container {
-                height: 300px;
             }
         }
         
@@ -334,10 +422,6 @@
                 flex-direction: column;
                 gap: 5px;
             }
-            
-            .video-container {
-                height: 250px;
-            }
         }
     </style>
 </head>
@@ -345,8 +429,15 @@
     <div class="container">
         <header>
             <h1><i class="fas fa-play-circle"></i> 动漫视频播放器</h1>
+            <button class="settings-btn" id="settingsBtn">
+                <i class="fas fa-cog"></i>
+            </button>
             <div class="anime-title" id="currentAnimeTitle">紫罗兰永恒花园剧场版</div>
             <div class="player-info">
+                <div class="player-type">
+                    <i class="fas fa-video"></i>
+                    <span id="currentPlayerType">自动选择</span>
+                </div>
                 <div class="player-type">
                     <i class="fas fa-film"></i>
                     <span id="currentFormat">M3U8</span>
@@ -359,13 +450,7 @@
         </div>
         
         <div class="video-container">
-            <!-- MP4播放器 -->
-            <video id="mp4-player" controls autoplay playsinline style="display:none;">
-                您的浏览器不支持HTML5视频播放
-            </video>
-            
-            <!-- HLS播放器 -->
-            <video id="hls-player" controls autoplay playsinline style="display:none;">
+            <video id="player" controls autoplay playsinline>
                 您的浏览器不支持HTML5视频播放
             </video>
             
@@ -396,6 +481,33 @@
             <button class="switch-anime" id="switchAnimeBtn"><i class="fas fa-exchange-alt"></i> 切换动漫</button>
         </div>
         
+        <div class="settings-panel" id="settingsPanel">
+            <h3><i class="fas fa-cog"></i> 播放器设置</h3>
+            
+            <div class="setting-item">
+                <label for="playerType">播放器类型</label>
+                <div class="select-wrapper">
+                    <select id="playerType">
+                        <option value="auto">自动选择 (推荐)</option>
+                        <option value="mp4">强制使用MP4播放器</option>
+                        <option value="hls">强制使用HLS播放器</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="setting-item">
+                <label for="autoplay">自动播放</label>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="autoplay" checked>
+                    <span>启用视频自动播放</span>
+                </div>
+            </div>
+            
+            <div class="setting-item">
+                <button id="saveSettingsBtn"><i class="fas fa-save"></i> 保存设置</button>
+            </div>
+        </div>
+        
         <footer>
             <p><i class="fas fa-info-circle"></i> 支持MP4和M3U8(HLS)格式视频播放</p>
             <p><i class="fas fa-robot"></i> 本页面由AI技术辅助生成</p>
@@ -408,13 +520,18 @@
         const animes = [];
         
         // 获取DOM元素
-        const mp4Player = document.getElementById('mp4-player');
-        const hlsPlayer = document.getElementById('hls-player');
+        const videoPlayer = document.getElementById('player');
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
         const switchAnimeBtn = document.getElementById('switchAnimeBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const playerTypeSelect = document.getElementById('playerType');
+        const autoplayCheckbox = document.getElementById('autoplay');
         const currentEpisode = document.getElementById('currentEpisode');
         const currentAnimeTitle = document.getElementById('currentAnimeTitle');
+        const currentPlayerType = document.getElementById('currentPlayerType');
         const currentFormat = document.getElementById('currentFormat');
         const episodeNav = document.getElementById('episodeNav');
         const animeList = document.getElementById('animeList');
@@ -426,6 +543,10 @@
         let currentAnimeIndex = 0;
         let currentEpisodeIndex = 0;
         let hls = null;
+        let playerSettings = {
+            playerType: 'auto',
+            autoplay: true
+        };
         
         // 添加动漫卡片的函数
         function addAnimeCard(title, cover, episodes) {
@@ -447,7 +568,7 @@
             card.dataset.anime = newIndex;
             
             card.innerHTML = `
-                <img src="${cover}" alt="${title}" onerror="this.src='https://via.placeholder.com/180x270/1a2a6c/ffffff?text=封面加载失败'">
+                <img src="${cover}" alt="${title}">
                 <h3>${title}</h3>
             `;
             
@@ -458,6 +579,25 @@
             
             // 添加到列表
             animeList.appendChild(card);
+        }
+        
+        // 检测全屏状态并调整背景
+        function checkFullscreenMode() {
+            // 检测是否处于全屏模式
+            const isFullscreen = document.fullscreenElement || 
+                                document.webkitFullscreenElement || 
+                                document.mozFullScreenElement || 
+                                document.msFullscreenElement;
+            
+            // 检测页面缩放比例
+            const zoomLevel = window.devicePixelRatio || 1;
+            
+            // 如果处于全屏模式或缩放比例大于1.2，则切换到黑色背景
+            if (isFullscreen || zoomLevel > 1.2) {
+                document.body.classList.add('fullscreen-mode');
+            } else {
+                document.body.classList.remove('fullscreen-mode');
+            }
         }
         
         // 初始化播放器
@@ -528,7 +668,7 @@
                 ]
             );
 
-             addAnimeCard(
+            addAnimeCard(
                 "某科学的超电磁炮",
                 "https://vip.dytt-img.com/upload/vod/20250215-1/076f6fba0aa5a4e204405a02c1a77e02.jpg",
                 [
@@ -637,7 +777,7 @@
                     { url: 'https://mid.w.xk.miui.com/8c56db1a0b973ea8f1b4694b0ab11599.0p?filename=1.mp4', type: 'mp4' }
                 ]
             );
-
+            
             addAnimeCard(
                 "败犬女主太多了！",
                 "https://vip.dytt-img.com/upload/vod/20250212-1/4dcb934ed1a2c4f5c3fbf2ce4fb8f942.jpg",
@@ -656,9 +796,51 @@
                     { url: 'https://vip.dytt-hot.com/20250129/23391_c70a586e/index.m3u8', type: 'm3u8' },
                 ]
             );
-
+            
+            // 初始检查全屏状态
+            checkFullscreenMode();
+            
+            // 监听全屏变化
+            document.addEventListener('fullscreenchange', checkFullscreenMode);
+            document.addEventListener('webkitfullscreenchange', checkFullscreenMode);
+            document.addEventListener('mozfullscreenchange', checkFullscreenMode);
+            document.addEventListener('MSFullscreenChange', checkFullscreenMode);
+            
+            // 监听窗口大小变化（包括缩放）
+            window.addEventListener('resize', checkFullscreenMode);
+            
+            loadSettings();
             loadAnime(currentAnimeIndex);
             createEpisodeNav();
+        }
+        
+        // 加载设置
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('playerSettings');
+            if (savedSettings) {
+                playerSettings = JSON.parse(savedSettings);
+                playerTypeSelect.value = playerSettings.playerType;
+                autoplayCheckbox.checked = playerSettings.autoplay;
+            }
+            updatePlayerTypeDisplay();
+        }
+        
+        // 保存设置
+        function saveSettings() {
+            playerSettings.playerType = playerTypeSelect.value;
+            playerSettings.autoplay = autoplayCheckbox.checked;
+            localStorage.setItem('playerSettings', JSON.stringify(playerSettings));
+            updatePlayerTypeDisplay();
+            
+            // 重新加载当前视频
+            loadEpisode(currentEpisodeIndex);
+        }
+        
+        // 更新播放器类型显示
+        function updatePlayerTypeDisplay() {
+            currentPlayerType.textContent = 
+                playerSettings.playerType === 'auto' ? '自动选择' : 
+                playerSettings.playerType === 'mp4' ? 'MP4播放器' : 'HLS播放器';
         }
         
         // 加载动漫
@@ -696,16 +878,21 @@
                 hls = null;
             }
             
-            // 隐藏所有播放器
-            mp4Player.style.display = 'none';
-            hlsPlayer.style.display = 'none';
-            
             // 更新格式标识
             formatBadge.textContent = episode.type.toUpperCase();
             currentFormat.textContent = episode.type.toUpperCase();
             
-            // 根据格式选择播放器
-            if (episode.type === 'mp4') {
+            // 重置视频元素
+            resetVideoElement();
+            
+            // 根据设置选择播放器类型
+            let playerToUse = playerSettings.playerType;
+            if (playerToUse === 'auto') {
+                playerToUse = episode.type === 'm3u8' ? 'hls' : 'mp4';
+            }
+            
+            // 根据选择的播放器类型加载视频
+            if (playerToUse === 'mp4') {
                 loadWithMp4Player(episode.url);
             } else {
                 loadWithHlsPlayer(episode.url);
@@ -723,38 +910,72 @@
             });
         }
         
+        // 重置视频元素
+        function resetVideoElement() {
+            // 清除所有source子元素
+            while (videoPlayer.firstChild) {
+                videoPlayer.removeChild(videoPlayer.firstChild);
+            }
+            
+            // 重置视频元素的src
+            videoPlayer.src = '';
+            videoPlayer.removeAttribute('src');
+            
+            // 重新添加默认的错误消息
+            const errorMsg = document.createTextNode('您的浏览器不支持HTML5视频播放');
+            videoPlayer.appendChild(errorMsg);
+        }
+        
         // 使用MP4播放器加载视频
         function loadWithMp4Player(url) {
-            // 重置MP4播放器
-            mp4Player.src = url;
-            mp4Player.load();
+            // 清除之前的source
+            resetVideoElement();
             
-            mp4Player.onloadeddata = function() {
-                mp4Player.style.display = 'block';
-                hideLoading();
-                mp4Player.play().catch(e => {
-                    console.log("自动播放被阻止:", e);
-                });
-            };
+            const source = document.createElement('source');
+            source.src = url;
+            source.type = 'video/mp4';
+            videoPlayer.appendChild(source);
             
-            mp4Player.onerror = function() {
-                showError("MP4视频加载失败，请尝试切换播放源");
+            videoPlayer.load();
+            
+            // 尝试自动播放
+            if (playerSettings.autoplay) {
+                const playPromise = videoPlayer.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        hideLoading();
+                    }).catch(e => {
+                        hideLoading();
+                        console.log("自动播放被阻止，用户需要手动启动播放:", e);
+                    });
+                }
+            } else {
                 hideLoading();
-            };
+            }
         }
         
         // 使用HLS播放器加载视频
         function loadWithHlsPlayer(url) {
+            // 清除之前的source
+            resetVideoElement();
+            
             if (Hls.isSupported()) {
+                // 使用Hls.js播放
                 hls = new Hls();
                 hls.loadSource(url);
-                hls.attachMedia(hlsPlayer);
+                hls.attachMedia(videoPlayer);
                 hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    hlsPlayer.style.display = 'block';
-                    hideLoading();
-                    hlsPlayer.play().catch(e => {
-                        console.log("自动播放被阻止:", e);
-                    });
+                    if (playerSettings.autoplay) {
+                        videoPlayer.play().then(() => {
+                            hideLoading();
+                        }).catch(e => {
+                            hideLoading();
+                            console.log("自动播放被阻止:", e);
+                        });
+                    } else {
+                        hideLoading();
+                    }
                 });
                 
                 hls.on(Hls.Events.ERROR, function(event, data) {
@@ -776,24 +997,24 @@
                         }
                     }
                 });
-            } else if (hlsPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+            } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
                 // Safari原生支持HLS
-                hlsPlayer.src = url;
-                hlsPlayer.addEventListener('loadedmetadata', function() {
-                    hlsPlayer.style.display = 'block';
-                    hideLoading();
-                    hlsPlayer.play().catch(e => {
-                        console.log("自动播放被阻止:", e);
-                    });
+                videoPlayer.src = url;
+                videoPlayer.addEventListener('loadedmetadata', function() {
+                    if (playerSettings.autoplay) {
+                        videoPlayer.play().then(() => {
+                            hideLoading();
+                        }).catch(e => {
+                            hideLoading();
+                            console.log("自动播放被阻止:", e);
+                        });
+                    } else {
+                        hideLoading();
+                    }
                 });
             } else {
                 showError("您的浏览器不支持M3U8格式视频播放");
             }
-            
-            hlsPlayer.onerror = function() {
-                showError("M3U8视频加载失败，请尝试切换播放源");
-                hideLoading();
-            };
         }
         
         // 创建剧集导航
@@ -851,6 +1072,16 @@
             currentAnimeIndex = (currentAnimeIndex + 1) % animes.length;
             loadAnime(currentAnimeIndex);
         });
+        
+        settingsBtn.addEventListener('click', () => {
+            if (settingsPanel.style.display === 'block') {
+                settingsPanel.style.display = 'none';
+            } else {
+                settingsPanel.style.display = 'block';
+            }
+        });
+        
+        saveSettingsBtn.addEventListener('click', saveSettings);
         
         // 初始化播放器
         initPlayer();
